@@ -1,0 +1,8 @@
+{
+  "name": "No Time For Caution",
+  "description": "Display a Countdown from a specific date",
+  "uuid": "notimeforcaution@ans-ibrahim.github",
+  "shell-version": [
+    "47"
+  ]
+}
