@@ -2,7 +2,6 @@ import GObject from 'gi://GObject';
 import St from 'gi://St';
 import Clutter from 'gi://Clutter';
 import GLib from 'gi://GLib';
-import Gio from 'gi://Gio';
 
 import { Extension, gettext as _ } from 'resource:///org/gnome/shell/extensions/extension.js';
 import * as PanelMenu from 'resource:///org/gnome/shell/ui/panelMenu.js';
@@ -57,6 +56,9 @@ class Indicator extends PanelMenu.Button {
                     break;
                 case 'hours':
                     timeString = `${(diff / 3600).toFixed(2)} Hours Remaining`;
+                    break;
+                case 'minutes':
+                    timeString = `${(diff / 60).toFixed(2)} Minutes Remaining`;
                     break;
                 case 'seconds':
                     timeString = `${diff} Seconds Remaining`;
