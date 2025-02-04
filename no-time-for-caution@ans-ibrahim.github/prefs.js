@@ -139,7 +139,6 @@ export default class NoTimeForCautionPreferences extends ExtensionPreferences {
       marginBottom: 10,
     });
 
-    
     indexRow.add_suffix(indexSpinButton);
     indexRow.set_activatable_widget(indexSpinButton);
 
