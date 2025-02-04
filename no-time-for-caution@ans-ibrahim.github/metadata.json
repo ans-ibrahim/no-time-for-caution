@@ -3,7 +3,7 @@
   "description": "Display a Countdown from a specific date",
   "uuid": "no-time-for-caution@ans-ibrahim.github",
   "url": "https://github.com/ans-ibrahim/no-time-for-caution",
-   "settings-schema": "org.gnome.shell.extensions.no-time-for-caution",
+  "settings-schema": "org.gnome.shell.extensions.no-time-for-caution",
   "shell-version": [
     "47"
   ],
