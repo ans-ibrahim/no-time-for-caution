@@ -5,7 +5,7 @@
   "url": "https://github.com/ans-ibrahim/no-time-for-caution",
   "settings-schema": "org.gnome.shell.extensions.no-time-for-caution",
   "shell-version": [
-    "47"
+    "45,46,47"
   ],
   "version": 1
 }
