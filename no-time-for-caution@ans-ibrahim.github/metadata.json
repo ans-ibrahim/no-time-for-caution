@@ -1,6 +1,6 @@
 {
   "name": "No Time For Caution",
-  "description": "Display a Countdown from a specific date",
+  "description": "Display a Countdown from a specific date in top panel of gnome. Set a goal in settings and it would remind you how much time is left for that goal. You can customize the unit of time like days hours weeks or months.",
   "uuid": "no-time-for-caution@ans-ibrahim.github",
   "url": "https://github.com/ans-ibrahim/no-time-for-caution",
   "settings-schema": "org.gnome.shell.extensions.no-time-for-caution",
