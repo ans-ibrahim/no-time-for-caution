@@ -111,10 +111,10 @@ export default class NoTimeForCautionExtension extends Extension {
 
   disable() {
     if (this._indicator) {
-      this.settings.disconnect("changed");
-      this.settings = null;
       this._indicator.destroy();
       this._indicator = null;
     }
+    this.settings.disconnect("changed");
+    this.settings = null;
   }
 }
