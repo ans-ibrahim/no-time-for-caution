@@ -2,7 +2,7 @@
 <schemalist>
   <schema id="org.gnome.shell.extensions.no-time-for-caution" path="/org/gnome/shell/extensions/no-time-for-caution/">
     
-    <key name="goal-time" type="i">
+    <key name="goal-time" type="x">
       <default>0</default>
       <summary>Goal Time</summary>
       <description>Unix timestamp representing the goal time for countdown.</description>

@@ -30,7 +30,7 @@ const Indicator = GObject.registerClass(
     }
 
     _updateCountdown() {
-      let goalUnix = this.settings.get_int("goal-time");
+      let goalUnix = this.settings.get_int64("goal-time");
 
       // Convert goal time to local time
       let goalLocal = GLib.DateTime.new_from_unix_utc(goalUnix);

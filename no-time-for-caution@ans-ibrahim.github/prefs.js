@@ -38,7 +38,7 @@ export default class NoTimeForCautionPreferences extends ExtensionPreferences {
     goalTimeRow.set_activatable_widget(goalTimeEntry);
 
     // Load stored goal time and format it
-    const storedTime = settings.get_int("goal-time");
+    const storedTime = settings.get_int64("goal-time");
     if (storedTime > 0) {
       const storedDate = GLib.DateTime.new_from_unix_local(storedTime);
       goalTimeEntryBuffer.set_text(storedDate.format("%d/%m/%Y %H:%M"), -1);
@@ -61,7 +61,7 @@ export default class NoTimeForCautionPreferences extends ExtensionPreferences {
           0
         ).to_utc();
         const unixTimestamp = dateTime.to_unix();
-        settings.set_int("goal-time", unixTimestamp);
+        settings.set_int64("goal-time", unixTimestamp);
       }
     });
 
