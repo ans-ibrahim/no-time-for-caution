@@ -130,7 +130,7 @@ export default class NoTimeForCautionPreferences extends ExtensionPreferences {
 
     const indexSpinButton = new Gtk.SpinButton({
       adjustment: new Gtk.Adjustment({
-        lower: 0,
+        lower: -10,
         upper: 10,
         step_increment: 1,
       }),
