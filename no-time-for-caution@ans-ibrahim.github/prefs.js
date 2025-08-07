@@ -13,25 +13,31 @@ export default class NoTimeForCautionPreferences extends ExtensionPreferences {
   fillPreferencesWindow(window) {
     const settings = this.getSettings();
 
-    const preferencesPage = new Adw.PreferencesPage();
+    const preferencesPage = new Adw.PreferencesPage({
+      title: _("Settings"),
+      icon_name: "preferences-system-symbolic",
+    });
     window.add(preferencesPage);
 
-    const generalGroup = new Adw.PreferencesGroup({
-      title: _("General Settings"),
+    // Goal Time Group
+    const goalGroup = new Adw.PreferencesGroup({
+      title: _("Goal Configuration"),
+      description: _("Set your target date and time"),
     });
-    preferencesPage.add(generalGroup);
+    preferencesPage.add(goalGroup);
 
     // Goal Time
     const goalTimeRow = new Adw.ActionRow({
       title: _("Goal Time"),
       subtitle: _("Enter in format: DD/MM/YYYY hh:mm"),
     });
-    generalGroup.add(goalTimeRow);
+    goalGroup.add(goalTimeRow);
 
     const goalTimeEntryBuffer = new Gtk.EntryBuffer();
     const goalTimeEntry = new Gtk.Entry({
       buffer: goalTimeEntryBuffer,
       placeholder_text: _("DD/MM/YYYY hh:mm"),
+      hexpand: true,
     });
 
     goalTimeRow.add_suffix(goalTimeEntry);
@@ -65,6 +71,13 @@ export default class NoTimeForCautionPreferences extends ExtensionPreferences {
       }
     });
 
+    // Display Settings Group
+    const displayGroup = new Adw.PreferencesGroup({
+      title: _("Display Settings"),
+      description: _("Customize how the countdown is displayed"),
+    });
+    preferencesPage.add(displayGroup);
+
     // Time Unit
     const timeUnitOptions = new Gtk.StringList();
     ["years", "months", "weeks", "days", "hours", "minutes", "seconds"].forEach(
@@ -94,7 +107,43 @@ export default class NoTimeForCautionPreferences extends ExtensionPreferences {
         ]
       );
     });
-    generalGroup.add(timeUnitRow);
+    displayGroup.add(timeUnitRow);
+
+    // Custom Text
+    const customTextRow = new Adw.ActionRow({
+      title: _("Custom Text"),
+      subtitle: _("Text to display after the time (e.g., 'till millionaire')"),
+    });
+    displayGroup.add(customTextRow);
+
+    const customTextEntryBuffer = new Gtk.EntryBuffer();
+    const customTextEntry = new Gtk.Entry({
+      buffer: customTextEntryBuffer,
+      placeholder_text: _("e.g., till billionaire"),
+      hexpand: true,
+    });
+
+    customTextRow.add_suffix(customTextEntry);
+    customTextRow.set_activatable_widget(customTextEntry);
+
+    // Load stored custom text
+    const storedCustomText = settings.get_string("custom-text");
+    if (storedCustomText) {
+      customTextEntryBuffer.set_text(storedCustomText, -1);
+    }
+
+    // Save custom text
+    customTextEntry.connect("changed", () => {
+      const input = customTextEntryBuffer.get_text().trim();
+      settings.set_string("custom-text", input);
+    });
+
+    // Position Settings Group
+    const positionGroup = new Adw.PreferencesGroup({
+      title: _("Panel Position"),
+      description: _("Configure where the indicator appears in the panel"),
+    });
+    preferencesPage.add(positionGroup);
 
     // Indicator Position
     const positionOptions = new Gtk.StringList();
@@ -118,7 +167,7 @@ export default class NoTimeForCautionPreferences extends ExtensionPreferences {
       );
     });
 
-    generalGroup.add(positionRow);
+    positionGroup.add(positionRow);
 
     // Indicator Index
     const indexRow = new Adw.ActionRow({
@@ -126,7 +175,7 @@ export default class NoTimeForCautionPreferences extends ExtensionPreferences {
       subtitle: _("Index of the indicator in the panel"),
     });
 
-    generalGroup.add(indexRow);
+    positionGroup.add(indexRow);
 
     const indexSpinButton = new Gtk.SpinButton({
       adjustment: new Gtk.Adjustment({
@@ -135,8 +184,7 @@ export default class NoTimeForCautionPreferences extends ExtensionPreferences {
         step_increment: 1,
       }),
       numeric: true,
-      marginTop: 10,
-      marginBottom: 10,
+      digits: 0,
     });
 
     indexRow.add_suffix(indexSpinButton);

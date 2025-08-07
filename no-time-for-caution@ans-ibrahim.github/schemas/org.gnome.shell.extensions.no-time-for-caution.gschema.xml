@@ -15,6 +15,12 @@
       <description>The unit of time to display (days, hours, weeks, months, years).</description>
     </key>
 
+    <key name="custom-text" type="s">
+      <default>"Remaining"</default>
+      <summary>Custom Text</summary>
+      <description>Custom text to append after the time value (e.g., "till billionaire").</description>
+    </key>
+
     <key name="indicator-position" type="s">
       <default>"right"</default>
       <summary>Indicator Position</summary>

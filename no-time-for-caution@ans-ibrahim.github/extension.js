@@ -44,31 +44,32 @@ const Indicator = GObject.registerClass(
         this.label.set_text("No Goal");
       } else {
         let unit = this.settings.get_string("time-unit");
+        let customText = this.settings.get_string("custom-text");
         let timeString;
 
         switch (unit) {
           case "years":
-            timeString = `${(diff / 31536000).toFixed(2)} Years Remaining`;
+            timeString = `${(diff / 31536000).toFixed(2)} Years ${customText}`;
             break;
           case "months":
-            timeString = `${(diff / 2592000).toFixed(2)} Months Remaining`;
+            timeString = `${(diff / 2592000).toFixed(2)} Months ${customText}`;
             break;
           case "weeks":
-            timeString = `${(diff / 604800).toFixed(2)} Weeks Remaining`;
+            timeString = `${(diff / 604800).toFixed(2)} Weeks ${customText}`;
             break;
           case "days":
-            timeString = `${(diff / 86400).toFixed(2)} Days Remaining`;
+            timeString = `${(diff / 86400).toFixed(2)} Days ${customText}`;
             break;
           case "hours":
-            timeString = `${(diff / 3600).toFixed(2)} Hours Remaining`;
+            timeString = `${(diff / 3600).toFixed(2)} Hours ${customText}`;
             break;
           case "minutes":
-            timeString = `${(diff / 60).toFixed(2)} Minutes Remaining`;
+            timeString = `${(diff / 60).toFixed(2)} Minutes ${customText}`;
             break;
           case "seconds":
-            timeString = `${diff} Seconds Remaining`;
+            timeString = `${diff} Seconds ${customText}`;
           default:
-            timeString = `${diff} Seconds Remaining`;
+            timeString = `${diff} Seconds ${customText}`;
         }
         this.label.set_text(timeString);
       }
