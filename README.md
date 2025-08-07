@@ -62,7 +62,7 @@ Install from [GNOME Shell extension page](https://extensions.gnome.org/extension
 ### Build Commands
 
 ```bash
-make build     # Build extension and create zip
+make build     # Build extension and create zip package
 make install   # Build and install to user directory
 make uninstall # Remove from user directory
 make clean     # Clean build artifacts

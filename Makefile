@@ -12,10 +12,6 @@ USER_EXTENSIONS_DIR = $(HOME)/.local/share/gnome-shell/extensions
 # Default target
 all: install
 
-# Create build directory
-$(BUILD_DIR):
-	mkdir -p $(BUILD_DIR)
-
 # Compile schemas
 compile-schemas:
 	@echo "Compiling schemas..."
@@ -26,15 +22,14 @@ compile-schemas:
 build: compile-schemas
 	@echo "Building extension..."
 	mkdir -p $(BUILD_DIR)
-	cp -r $(EXTENSION_DIR) $(BUILD_DIR)/
-	cd $(BUILD_DIR) && zip -r $(ZIP_NAME) $(EXTENSION_NAME)
+	cd $(EXTENSION_DIR) && zip -r ../$(BUILD_DIR)/$(ZIP_NAME) *
 	@echo "Extension built and zipped: $(BUILD_DIR)/$(ZIP_NAME)"
 
 # Install to user directory
 install: build
 	@echo "Installing extension to user directory..."
 	mkdir -p $(USER_EXTENSIONS_DIR)
-	cp -r $(BUILD_DIR)/$(EXTENSION_NAME) $(USER_EXTENSIONS_DIR)/
+	cd $(BUILD_DIR) && unzip -o $(ZIP_NAME) -d $(USER_EXTENSIONS_DIR)/$(EXTENSION_NAME)
 	@echo "Extension installed to $(USER_EXTENSIONS_DIR)/$(EXTENSION_NAME)"
 	@echo "Please restart GNOME Shell or log out and back in to enable the extension"
 
@@ -53,7 +48,7 @@ clean:
 # Show help
 help:
 	@echo "Available targets:"
-	@echo "  build     - Build the extension and create zip in build folder"
+	@echo "  build     - Build extension and create zip package"
 	@echo "  install   - Build and install extension to user directory (default)"
 	@echo "  uninstall - Uninstall extension from user directory"
 	@echo "  clean     - Remove build artifacts"
