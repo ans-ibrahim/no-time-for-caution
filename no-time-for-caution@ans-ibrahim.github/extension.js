@@ -32,10 +32,11 @@ const Indicator = GObject.registerClass(
     _updateCountdown() {
       let goalUnix = this.settings.get_int64("goal-time");
 
-      // Convert goal time to local time
-      let goalLocal = GLib.DateTime.new_from_unix_utc(goalUnix);
+      // Convert goal time to local time for display consistency
+      let goalLocal = GLib.DateTime.new_from_unix_local(goalUnix);
 
-      let now = GLib.DateTime.new_now_utc();
+      // Use local time for comparison to avoid timezone issues
+      let now = GLib.DateTime.new_now_local();
 
       // Calculate time difference
       let diff = goalLocal.to_unix() - now.to_unix();
@@ -68,6 +69,7 @@ const Indicator = GObject.registerClass(
             break;
           case "seconds":
             timeString = `${diff} Seconds ${customText}`;
+            break;
           default:
             timeString = `${diff} Seconds ${customText}`;
         }
@@ -97,6 +99,8 @@ export default class NoTimeForCautionExtension extends Extension {
     );
     this.settings.connect("changed", () => {
       if (this._indicator) {
+        // Remove from panel before destroying to ensure clean cleanup
+        Main.panel.removeStatusArea("no-time-for-caution@ans-ibrahim.github");
         this._indicator.destroy();
         this._indicator = null;
       }
@@ -112,6 +116,8 @@ export default class NoTimeForCautionExtension extends Extension {
 
   disable() {
     if (this._indicator) {
+      // Remove from panel before destroying to ensure clean cleanup
+      Main.panel.removeStatusArea("no-time-for-caution@ans-ibrahim.github");
       this._indicator.destroy();
       this._indicator = null;
     }

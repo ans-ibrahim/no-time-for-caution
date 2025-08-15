@@ -58,16 +58,33 @@ export default class NoTimeForCautionPreferences extends ExtensionPreferences {
 
       if (match) {
         const [, day, month, year, hour, minute] = match.map(Number);
-        const dateTime = GLib.DateTime.new_local(
-          year,
-          month,
-          day,
-          hour,
-          minute,
-          0
-        ).to_utc();
-        const unixTimestamp = dateTime.to_unix();
-        settings.set_int64("goal-time", unixTimestamp);
+        
+        // Validate date bounds to prevent crashes
+        if (month < 1 || month > 12 || day < 1 || day > 31 || 
+            hour < 0 || hour > 23 || minute < 0 || minute > 59 ||
+            year < 1900 || year > 2100) {
+          return; // Invalid date, don't save
+        }
+        
+        try {
+          const dateTime = GLib.DateTime.new_local(
+            year,
+            month,
+            day,
+            hour,
+            minute,
+            0
+          );
+          
+          // Check if the date is valid (GLib will throw an error for invalid dates)
+          if (dateTime) {
+            const unixTimestamp = dateTime.to_utc().to_unix();
+            settings.set_int64("goal-time", unixTimestamp);
+          }
+        } catch (error) {
+          // Invalid date, don't save
+          console.warn("Invalid date entered:", input);
+        }
       }
     });
 
