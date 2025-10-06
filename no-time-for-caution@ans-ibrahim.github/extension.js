@@ -12,15 +12,21 @@ import * as Main from "resource:///org/gnome/shell/ui/main.js";
 
 const Indicator = GObject.registerClass(
   class Indicator extends PanelMenu.Button {
-    _init(settings) {
-      super._init(0.0, _("No Time For Caution"));
+    _init(settings, extension) {
+      super._init(0.5, _("No Time For Caution"));
       this.settings = settings;
+      this._extension = extension;
 
       this.label = new St.Label({
         text: _("Calculating..."),
         y_align: Clutter.ActorAlign.CENTER,
       });
       this.add_child(this.label);
+
+      // Add settings menu item
+      this._settingsItem = this.menu.addAction(_("Settings"), () => {
+        this._extension.openPreferences();
+      });
 
       this._updateCountdown();
       this._timeout = GLib.timeout_add_seconds(GLib.PRIORITY_DEFAULT, 1, () => {
@@ -88,7 +94,7 @@ const Indicator = GObject.registerClass(
 export default class NoTimeForCautionExtension extends Extension {
   enable() {
     this.settings = this.getSettings();
-    this._indicator = new Indicator(this.settings);
+    this._indicator = new Indicator(this.settings, this);
     Main.panel.addToStatusArea(
       "no-time-for-caution@ans-ibrahim.github",
       this._indicator,
@@ -100,7 +106,7 @@ export default class NoTimeForCautionExtension extends Extension {
         this._indicator.destroy();
         this._indicator = null;
       }
-      this._indicator = new Indicator(this.settings);
+      this._indicator = new Indicator(this.settings, this);
       Main.panel.addToStatusArea(
         "no-time-for-caution@ans-ibrahim.github",
         this._indicator,
