@@ -26,50 +26,139 @@ export default class NoTimeForCautionPreferences extends ExtensionPreferences {
     });
     preferencesPage.add(goalGroup);
 
-    // Goal Time
+    // Goal Time -  Date/Time Picker
     const goalTimeRow = new Adw.ActionRow({
       title: _("Goal Time"),
-      subtitle: _("Enter in format: DD/MM/YYYY hh:mm"),
+      subtitle: _("Select your target date and time"),
     });
     goalGroup.add(goalTimeRow);
 
-    const goalTimeEntryBuffer = new Gtk.EntryBuffer();
-    const goalTimeEntry = new Gtk.Entry({
-      buffer: goalTimeEntryBuffer,
-      placeholder_text: _("DD/MM/YYYY hh:mm"),
-      hexpand: true,
+    const pickerContainer = new Gtk.Box({
+      orientation: Gtk.Orientation.HORIZONTAL,
+      spacing: 16,
+      valign: Gtk.Align.CENTER,
+      height_request: 32, 
     });
 
-    goalTimeRow.add_suffix(goalTimeEntry);
-    goalTimeRow.set_activatable_widget(goalTimeEntry);
+    const dateButton = new Gtk.Button({
+      label: _("Select Date"),
+      css_classes: ["date-picker-button"],
+      valign: Gtk.Align.CENTER,
+    });
 
-    // Load stored goal time and format it
+    const timeContainer = new Gtk.Box({
+      orientation: Gtk.Orientation.HORIZONTAL,
+      spacing: 12,
+      valign: Gtk.Align.CENTER,
+      halign: Gtk.Align.START,
+    });
+
+    const hourSpin = new Gtk.SpinButton({
+      adjustment: new Gtk.Adjustment({
+        lower: 0,
+        upper: 23,
+        step_increment: 1,
+      }),
+      numeric: true,
+      digits: 0,
+      width_chars: 2,
+      css_classes: ["time-picker-spin"],
+      valign: Gtk.Align.CENTER,
+    });
+
+    const minuteSpin = new Gtk.SpinButton({
+      adjustment: new Gtk.Adjustment({
+        lower: 0,
+        upper: 59,
+        step_increment: 1,
+      }),
+      numeric: true,
+      digits: 0,
+      width_chars: 2,
+      css_classes: ["time-picker-spin"],
+      valign: Gtk.Align.CENTER,
+    });
+
+    timeContainer.append(hourSpin);
+    timeContainer.append(minuteSpin);
+
+    pickerContainer.append(dateButton);
+    pickerContainer.append(timeContainer);
+
+    const datePopover = new Gtk.Popover();
+    const calendar = new Gtk.Calendar({
+      show_day_names: true,
+      show_heading: true,
+      css_classes: ["date-picker-calendar"],
+    });
+    datePopover.set_child(calendar);
+    datePopover.set_parent(dateButton);
+
+    goalTimeRow.add_suffix(pickerContainer);
+    goalTimeRow.set_activatable_widget(dateButton);
+
+    goalTimeRow._datePopover = datePopover;
+    goalTimeRow._calendar = calendar;
+    goalTimeRow._hourSpin = hourSpin;
+    goalTimeRow._minuteSpin = minuteSpin;
+
     const storedTime = settings.get_int64("goal-time");
     if (storedTime > 0) {
       const storedDate = GLib.DateTime.new_from_unix_local(storedTime);
-      goalTimeEntryBuffer.set_text(storedDate.format("%d/%m/%Y %H:%M"), -1);
+      calendar.select_day(storedDate);
+      hourSpin.set_value(storedDate.get_hour());
+      minuteSpin.set_value(storedDate.get_minute());
+      dateButton.label = storedDate.format("%d/%m/%Y");
     }
 
-    // Validate and save input
-    goalTimeEntry.connect("changed", () => {
-      const input = goalTimeEntryBuffer.get_text().trim();
-      const regex = /^(\d{2})\/(\d{2})\/(\d{4}) (\d{2}):(\d{2})$/;
-      const match = input.match(regex);
-
-      if (match) {
-        const [, day, month, year, hour, minute] = match.map(Number);
-        const dateTime = GLib.DateTime.new_local(
-          year,
-          month,
-          day,
-          hour,
-          minute,
-          0
-        ).to_utc();
-        const unixTimestamp = dateTime.to_unix();
-        settings.set_int64("goal-time", unixTimestamp);
-      }
+    dateButton.connect("clicked", () => {
+      datePopover.popup();
     });
+
+    const saveDateTime = () => {
+      const selectedDate = calendar.get_date();
+      if (!selectedDate) {
+        return;
+      }
+
+      const year = selectedDate.get_year();
+      const month = selectedDate.get_month();
+      const day = selectedDate.get_day_of_month();
+      const hour = hourSpin.get_value_as_int();
+      const minute = minuteSpin.get_value_as_int();
+
+      const localDateTime = GLib.DateTime.new_local(
+        year,
+        month,
+        day,
+        hour,
+        minute,
+        0
+      );
+
+      if (!localDateTime) {
+        return;
+      }
+
+      // Update button label with selected date
+      dateButton.label = localDateTime.format("%d/%m/%Y");
+
+      // Visual feedback for successful selection
+      dateButton.add_css_class("success");
+
+      GLib.timeout_add(GLib.PRIORITY_DEFAULT, 1000, () => {
+        dateButton.remove_css_class("success");
+        return GLib.SOURCE_REMOVE;
+      });
+
+      const unixTimestamp = localDateTime.to_utc().to_unix();
+      settings.set_int64("goal-time", unixTimestamp);
+    };
+
+    // Connect to the visual controls only (no manual entry)
+    calendar.connect("day-selected", saveDateTime);
+    hourSpin.connect("value-changed", saveDateTime);
+    minuteSpin.connect("value-changed", saveDateTime);
 
     // Display Settings Group
     const displayGroup = new Adw.PreferencesGroup({
