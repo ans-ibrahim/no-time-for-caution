@@ -193,14 +193,14 @@ export default class NoTimeForCautionPreferences extends ExtensionPreferences {
 
     const customTextRow = new Adw.ActionRow({
       title: _("Custom Text"),
-      subtitle: _("Text to display after the time (e.g., 'till millionaire')"),
+      subtitle: _("Text to display after the time."),
     });
     displayGroup.add(customTextRow);
 
     const customTextEntryBuffer = new Gtk.EntryBuffer();
     const customTextEntry = new Gtk.Entry({
       buffer: customTextEntryBuffer,
-      placeholder_text: _("e.g., till billionaire"),
+      placeholder_text: _("e.g., till millionaire"),
       hexpand: true,
     });
 
