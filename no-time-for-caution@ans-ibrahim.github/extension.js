@@ -23,7 +23,6 @@ const Indicator = GObject.registerClass(
       });
       this.add_child(this.label);
 
-      // Add settings menu item
       this._settingsItem = this.menu.addAction(_("Settings"), () => {
         this._extension.openPreferences();
       });
@@ -38,12 +37,11 @@ const Indicator = GObject.registerClass(
     _updateCountdown() {
       let goalUnix = this.settings.get_int64("goal-time");
 
-      // Convert goal time to local time
       let goalLocal = GLib.DateTime.new_from_unix_utc(goalUnix);
 
       let now = GLib.DateTime.new_now_utc();
 
-      // Calculate time difference
+
       let diff = goalLocal.to_unix() - now.to_unix();
 
       if (diff <= 0) {

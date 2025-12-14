@@ -19,14 +19,12 @@ export default class NoTimeForCautionPreferences extends ExtensionPreferences {
     });
     window.add(preferencesPage);
 
-    // Goal Time Group
     const goalGroup = new Adw.PreferencesGroup({
       title: _("Goal Configuration"),
       description: _("Set your target date and time"),
     });
     preferencesPage.add(goalGroup);
 
-    // Goal Time -  Date/Time Picker
     const goalTimeRow = new Adw.ActionRow({
       title: _("Goal Time"),
       subtitle: _("Select your target date and time"),
@@ -140,10 +138,8 @@ export default class NoTimeForCautionPreferences extends ExtensionPreferences {
         return;
       }
 
-      // Update button label with selected date
       dateButton.label = localDateTime.format("%d/%m/%Y");
 
-      // Visual feedback for successful selection
       dateButton.add_css_class("success");
 
       GLib.timeout_add(GLib.PRIORITY_DEFAULT, 1000, () => {
@@ -155,19 +151,16 @@ export default class NoTimeForCautionPreferences extends ExtensionPreferences {
       settings.set_int64("goal-time", unixTimestamp);
     };
 
-    // Connect to the visual controls only (no manual entry)
     calendar.connect("day-selected", saveDateTime);
     hourSpin.connect("value-changed", saveDateTime);
     minuteSpin.connect("value-changed", saveDateTime);
 
-    // Display Settings Group
     const displayGroup = new Adw.PreferencesGroup({
       title: _("Display Settings"),
       description: _("Customize how the countdown is displayed"),
     });
     preferencesPage.add(displayGroup);
 
-    // Time Unit
     const timeUnitOptions = new Gtk.StringList();
     ["years", "months", "weeks", "days", "hours", "minutes", "seconds"].forEach(
       (unit) => timeUnitOptions.append(_(unit))
@@ -198,7 +191,6 @@ export default class NoTimeForCautionPreferences extends ExtensionPreferences {
     });
     displayGroup.add(timeUnitRow);
 
-    // Custom Text
     const customTextRow = new Adw.ActionRow({
       title: _("Custom Text"),
       subtitle: _("Text to display after the time (e.g., 'till millionaire')"),
@@ -215,26 +207,22 @@ export default class NoTimeForCautionPreferences extends ExtensionPreferences {
     customTextRow.add_suffix(customTextEntry);
     customTextRow.set_activatable_widget(customTextEntry);
 
-    // Load stored custom text
     const storedCustomText = settings.get_string("custom-text");
     if (storedCustomText) {
       customTextEntryBuffer.set_text(storedCustomText, -1);
     }
 
-    // Save custom text
     customTextEntry.connect("changed", () => {
       const input = customTextEntryBuffer.get_text().trim();
       settings.set_string("custom-text", input);
     });
 
-    // Position Settings Group
     const positionGroup = new Adw.PreferencesGroup({
       title: _("Panel Position"),
       description: _("Configure where the indicator appears in the panel"),
     });
     preferencesPage.add(positionGroup);
 
-    // Indicator Position
     const positionOptions = new Gtk.StringList();
     ["left", "center", "right"].forEach((pos) =>
       positionOptions.append(_(pos))
@@ -258,7 +246,6 @@ export default class NoTimeForCautionPreferences extends ExtensionPreferences {
 
     positionGroup.add(positionRow);
 
-    // Indicator Index
     const indexRow = new Adw.ActionRow({
       title: _("Indicator Index"),
       subtitle: _("Index of the indicator in the panel"),
