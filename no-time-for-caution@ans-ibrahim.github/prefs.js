@@ -217,6 +217,26 @@ export default class NoTimeForCautionPreferences extends ExtensionPreferences {
       settings.set_string("custom-text", input);
     });
 
+    const hideWhenExpiredRow = new Adw.ActionRow({
+      title: _("Hide When Goal Ends"),
+      subtitle: _("Hide the indicator when there is no active goal"),
+    });
+    displayGroup.add(hideWhenExpiredRow);
+
+    const hideWhenExpiredSwitch = new Gtk.Switch({
+      valign: Gtk.Align.CENTER,
+    });
+
+    hideWhenExpiredRow.add_suffix(hideWhenExpiredSwitch);
+    hideWhenExpiredRow.set_activatable_widget(hideWhenExpiredSwitch);
+
+    settings.bind(
+      "hide-when-expired",
+      hideWhenExpiredSwitch,
+      "active",
+      Gio.SettingsBindFlags.DEFAULT
+    );
+
     const positionGroup = new Adw.PreferencesGroup({
       title: _("Panel Position"),
       description: _("Configure where the indicator appears in the panel"),
@@ -227,8 +247,7 @@ export default class NoTimeForCautionPreferences extends ExtensionPreferences {
     ["left", "center", "right"].forEach((pos) =>
       positionOptions.append(_(pos))
     );
-
-    const positionRow = new Adw.ComboRow({
+   const positionRow = new Adw.ComboRow({
       title: _("Indicator Position"),
       subtitle: _("Position of the indicator in the panel"),
       model: positionOptions,

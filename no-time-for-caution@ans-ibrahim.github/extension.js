@@ -44,9 +44,20 @@ const Indicator = GObject.registerClass(
 
       let diff = goalLocal.to_unix() - now.to_unix();
 
-      if (diff <= 0) {
+      const shouldHideWhenExpired = this.settings.get_boolean(
+        "hide-when-expired"
+      );
+      const hasActiveGoal = goalUnix > 0 && diff > 0;
+
+      if (!hasActiveGoal) {
+        if (shouldHideWhenExpired) {
+          this.visible = false;
+          return;
+        }
+        this.visible = true;
         this.label.set_text("No Goal");
       } else {
+        this.visible = true;
         let unit = this.settings.get_string("time-unit");
         let customText = this.settings.get_string("custom-text");
         let timeString;

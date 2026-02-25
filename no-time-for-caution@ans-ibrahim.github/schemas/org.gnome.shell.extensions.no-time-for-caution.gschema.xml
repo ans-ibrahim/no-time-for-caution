@@ -32,6 +32,11 @@
       <description>index of the indicator in the panel.</description>
     </key>
 
+    <key name="hide-when-expired" type="b">
+      <default>false</default>
+      <summary>Hide When Expired</summary>
+      <description>Hide the indicator when there is no active goal or the goal time has passed.</description>
+    </key>
     
   </schema>
 </schemalist>
