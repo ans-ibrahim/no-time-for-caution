@@ -202,6 +202,7 @@ export default class NoTimeForCautionPreferences extends ExtensionPreferences {
       buffer: customTextEntryBuffer,
       placeholder_text: _("e.g., till millionaire"),
       hexpand: true,
+      valign: Gtk.Align.CENTER,
     });
 
     customTextRow.add_suffix(customTextEntry);
