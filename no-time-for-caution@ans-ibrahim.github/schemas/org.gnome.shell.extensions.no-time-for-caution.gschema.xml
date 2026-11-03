@@ -15,6 +15,18 @@
       <description>The unit of time to display (days, hours, weeks, months, years).</description>
     </key>
 
+    <key name="exclude-weekends" type="b">
+      <default>false</default>
+      <summary>Exclude Weekends</summary>
+      <description>Exclude Saturdays and Sundays from the days countdown.</description>
+    </key>
+
+    <key name="exclude-dates" type="s">
+      <default>""</default>
+      <summary>Exclude Dates</summary>
+      <description>Comma-separated dates in YYYY-MM-DD format to exclude from the days countdown.</description>
+    </key>
+
     <key name="custom-text" type="s">
       <default>"Remaining"</default>
       <summary>Custom Text</summary>

@@ -10,6 +10,46 @@ import {
 import * as PanelMenu from "resource:///org/gnome/shell/ui/panelMenu.js";
 import * as Main from "resource:///org/gnome/shell/ui/main.js";
 
+function countWorkingDays(now, goal, excludeWeekends, excludedDates) {
+  const excluded = new Set(
+    excludedDates.split(",").map(date => date.trim())
+  );
+
+  let current = GLib.DateTime.new_utc(
+    now.get_year(),
+    now.get_month(),
+    now.get_day_of_month(),
+    12, 0, 0
+  ).add_days(1);
+
+  const end = GLib.DateTime.new_utc(
+    goal.get_year(),
+    goal.get_month(),
+    goal.get_day_of_month(),
+    12, 0, 0
+  );
+
+  let count = 0;
+
+  while (current.compare(end) <= 0) {
+    const weekday = current.get_day_of_week();
+    const date = current.format("%Y-%m-%d");
+
+    const isWeekend = weekday === 6 || weekday === 7;
+
+    if (
+      (!excludeWeekends || !isWeekend) &&
+      !excluded.has(date)
+    ) {
+      count++;
+    }
+
+    current = current.add_days(1);
+  }
+
+  return count;
+}
+
 const Indicator = GObject.registerClass(
   class Indicator extends PanelMenu.Button {
     _init(settings, extension) {
@@ -72,9 +112,31 @@ const Indicator = GObject.registerClass(
           case "weeks":
             timeString = `${(diff / 604800).toFixed(2)} Weeks ${customText}`;
             break;
-          case "days":
-            timeString = `${(diff / 86400).toFixed(2)} Days ${customText}`;
+          case "days": {
+            const excludeWeekends =
+              this.settings.get_boolean("exclude-weekends");
+
+            const excludedDates =
+              this.settings.get_string("exclude-dates");
+
+            if (excludeWeekends || excludedDates.trim() !== "") {
+              const localNow = GLib.DateTime.new_now_local();
+              const localGoal = GLib.DateTime.new_from_unix_local(goalUnix);
+
+              const days = countWorkingDays(
+                localNow,
+                localGoal,
+                excludeWeekends,
+                excludedDates
+              );
+
+              timeString = `${days} Days ${customText}`;
+            } else {
+              timeString = `${(diff / 86400).toFixed(2)} Days ${customText}`;
+            }
+
             break;
+          }          
           case "hours":
             timeString = `${(diff / 3600).toFixed(2)} Hours ${customText}`;
             break;
