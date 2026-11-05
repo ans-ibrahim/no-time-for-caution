@@ -15,39 +15,39 @@ function countWorkingDays(now, goal, excludeWeekends, excludedDates) {
     excludedDates.split(",").map(date => date.trim())
   );
 
-  let current = GLib.DateTime.new_utc(
+  let current = GLib.DateTime.new_local(
     now.get_year(),
     now.get_month(),
     now.get_day_of_month(),
-    12, 0, 0
-  ).add_days(1);
-
-  const end = GLib.DateTime.new_utc(
-    goal.get_year(),
-    goal.get_month(),
-    goal.get_day_of_month(),
-    12, 0, 0
+    0, 0, 0
   );
 
   let count = 0;
 
-  while (current.compare(end) <= 0) {
-    const weekday = current.get_day_of_week();
-    const date = current.format("%Y-%m-%d");
+  while (current.to_unix() < goal.to_unix()) {
+    const next = current.add_days(1);
 
-    const isWeekend = weekday === 6 || weekday === 7;
+    if (isWorkingDay(current, excludeWeekends, excluded)) {
+      const start = Math.max(now.to_unix(), current.to_unix());
+      const end = Math.min(goal.to_unix(), next.to_unix());
 
-    if (
-      (!excludeWeekends || !isWeekend) &&
-      !excluded.has(date)
-    ) {
-      count++;
+      count += (end - start) / 86400;
     }
 
-    current = current.add_days(1);
+    current = next;
   }
 
   return count;
+}
+
+function isWorkingDay(date, excludeWeekends, excluded) {
+  const weekday = date.get_day_of_week();
+  const isWeekend = weekday === 6 || weekday === 7;
+
+  return (
+    (!excludeWeekends || !isWeekend) &&
+    !excluded.has(date.format("%Y-%m-%d"))
+  );
 }
 
 const Indicator = GObject.registerClass(
@@ -56,6 +56,7 @@ const Indicator = GObject.registerClass(
       super._init(0.5, _("No Time For Caution"));
       this.settings = settings;
       this._extension = extension;
+      this._workingDaysCache = null;
 
       this.label = new St.Label({
         text: _("Calculating..."),
@@ -123,20 +124,20 @@ const Indicator = GObject.registerClass(
               const localNow = GLib.DateTime.new_now_local();
               const localGoal = GLib.DateTime.new_from_unix_local(goalUnix);
 
-              const days = countWorkingDays(
+              const days = this._countWorkingDays(
                 localNow,
                 localGoal,
                 excludeWeekends,
                 excludedDates
               );
 
-              timeString = `${days} Days ${customText}`;
+              timeString = `${days.toFixed(2)} Days ${customText}`;
             } else {
               timeString = `${(diff / 86400).toFixed(2)} Days ${customText}`;
             }
 
             break;
-          }          
+          }
           case "hours":
             timeString = `${(diff / 3600).toFixed(2)} Hours ${customText}`;
             break;
@@ -150,6 +151,51 @@ const Indicator = GObject.registerClass(
         }
         this.label.set_text(timeString);
       }
+    }
+
+    _countWorkingDays(now, goal, excludeWeekends, excludedDates) {
+      const excluded = new Set(
+        excludedDates.split(",").map(date => date.trim())
+      );
+      const currentDay = GLib.DateTime.new_local(
+        now.get_year(),
+        now.get_month(),
+        now.get_day_of_month(),
+        0, 0, 0
+      );
+      const nextDay = currentDay.add_days(1);
+      const nextDayUnix = nextDay.to_unix();
+      const goalUnix = goal.to_unix();
+
+      let days = 0;
+
+      if (isWorkingDay(currentDay, excludeWeekends, excluded)) {
+        days += (Math.min(goalUnix, nextDayUnix) - now.to_unix()) / 86400;
+      }
+
+      const cache = this._workingDaysCache;
+      const cacheIsValid =
+        cache?.nextDayUnix === nextDayUnix &&
+        cache.goalUnix === goalUnix &&
+        cache.excludeWeekends === excludeWeekends &&
+        cache.excludedDates === excludedDates;
+
+      if (!cacheIsValid) {
+        this._workingDaysCache = {
+          nextDayUnix,
+          goalUnix,
+          excludeWeekends,
+          excludedDates,
+          futureDays: countWorkingDays(
+            nextDay,
+            goal,
+            excludeWeekends,
+            excludedDates
+          ),
+        };
+      }
+
+      return days + this._workingDaysCache.futureDays;
     }
 
     destroy() {
