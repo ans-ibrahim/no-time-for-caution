@@ -28,10 +28,12 @@ function countWorkingDays(now, goal, excludeWeekends, excludedDates) {
     const next = current.add_days(1);
 
     if (isWorkingDay(current, excludeWeekends, excluded)) {
-      const start = Math.max(now.to_unix(), current.to_unix());
-      const end = Math.min(goal.to_unix(), next.to_unix());
+      const currentUnix = current.to_unix();
+      const nextUnix = next.to_unix();
+      const start = Math.max(now.to_unix(), currentUnix);
+      const end = Math.min(goal.to_unix(), nextUnix);
 
-      count += (end - start) / 86400;
+      count += (end - start) / (nextUnix - currentUnix);
     }
 
     current = next;
@@ -170,7 +172,9 @@ const Indicator = GObject.registerClass(
       let days = 0;
 
       if (isWorkingDay(currentDay, excludeWeekends, excluded)) {
-        days += (Math.min(goalUnix, nextDayUnix) - now.to_unix()) / 86400;
+        days +=
+          (Math.min(goalUnix, nextDayUnix) - now.to_unix()) /
+          (nextDayUnix - currentDay.to_unix());
       }
 
       const cache = this._workingDaysCache;
