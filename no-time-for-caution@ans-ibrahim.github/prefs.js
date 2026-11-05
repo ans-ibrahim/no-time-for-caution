@@ -161,35 +161,76 @@ export default class NoTimeForCautionPreferences extends ExtensionPreferences {
     });
     preferencesPage.add(displayGroup);
 
+    const units = [
+      "years",
+      "months",
+      "weeks",
+      "days",
+      "hours",
+      "minutes",
+      "seconds",
+    ];
+
     const timeUnitOptions = new Gtk.StringList();
-    ["years", "months", "weeks", "days", "hours", "minutes", "seconds"].forEach(
-      (unit) => timeUnitOptions.append(_(unit))
-    );
+
+    units.forEach(unit => timeUnitOptions.append(_(unit)));
 
     const timeUnitRow = new Adw.ComboRow({
       title: _("Time Unit"),
       subtitle: _("Unit of time to display"),
       model: timeUnitOptions,
-      selected: [
-        "years",
-        "months",
-        "weeks",
-        "days",
-        "hours",
-        "minutes",
-        "seconds",
-      ].indexOf(settings.get_string("time-unit")),
+      selected: Math.max(
+        0,
+        units.indexOf(settings.get_string("time-unit"))
+      ),
     });
 
-    timeUnitRow.connect("notify::selected", (row) => {
-      settings.set_string(
-        "time-unit",
-        ["years", "months", "weeks", "days", "hours", "minutes", "seconds"][
-          row.selected
-        ]
-      );
+    timeUnitRow.connect("notify::selected", row => {
+      settings.set_string("time-unit", units[row.selected]);
     });
     displayGroup.add(timeUnitRow);
+    
+    const weekendsRow = new Adw.SwitchRow({
+      title: _("Exclude Weekends"),
+      subtitle: _("Exclude Saturdays and Sundays"),
+    });
+
+    displayGroup.add(weekendsRow);
+
+    settings.bind(
+      "exclude-weekends",
+      weekendsRow,
+      "active",
+      Gio.SettingsBindFlags.DEFAULT
+    );
+
+    const excludedDatesRow = new Adw.EntryRow({
+      title: _("Excluded Dates (YYYY-MM-DD, ...)"),
+    });
+
+    displayGroup.add(excludedDatesRow);
+
+    settings.bind(
+      "exclude-dates",
+      excludedDatesRow,
+      "text",
+      Gio.SettingsBindFlags.DEFAULT
+    );
+
+    const updateWorkingDaysVisibility = () => {
+      const enabled =
+        settings.get_string("time-unit") === "days";
+
+      weekendsRow.visible = enabled;
+      excludedDatesRow.visible = enabled;
+    };
+
+    settings.connect(
+      "changed::time-unit",
+      updateWorkingDaysVisibility
+    );
+
+    updateWorkingDaysVisibility();
 
     const customTextRow = new Adw.ActionRow({
       title: _("Custom Text"),

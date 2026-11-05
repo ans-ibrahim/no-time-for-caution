@@ -10,12 +10,55 @@ import {
 import * as PanelMenu from "resource:///org/gnome/shell/ui/panelMenu.js";
 import * as Main from "resource:///org/gnome/shell/ui/main.js";
 
+function countWorkingDays(now, goal, excludeWeekends, excludedDates) {
+  const excluded = new Set(
+    excludedDates.split(",").map(date => date.trim())
+  );
+
+  let current = GLib.DateTime.new_local(
+    now.get_year(),
+    now.get_month(),
+    now.get_day_of_month(),
+    0, 0, 0
+  );
+
+  let count = 0;
+
+  while (current.to_unix() < goal.to_unix()) {
+    const next = current.add_days(1);
+
+    if (isWorkingDay(current, excludeWeekends, excluded)) {
+      const currentUnix = current.to_unix();
+      const nextUnix = next.to_unix();
+      const start = Math.max(now.to_unix(), currentUnix);
+      const end = Math.min(goal.to_unix(), nextUnix);
+
+      count += (end - start) / (nextUnix - currentUnix);
+    }
+
+    current = next;
+  }
+
+  return count;
+}
+
+function isWorkingDay(date, excludeWeekends, excluded) {
+  const weekday = date.get_day_of_week();
+  const isWeekend = weekday === 6 || weekday === 7;
+
+  return (
+    (!excludeWeekends || !isWeekend) &&
+    !excluded.has(date.format("%Y-%m-%d"))
+  );
+}
+
 const Indicator = GObject.registerClass(
   class Indicator extends PanelMenu.Button {
     _init(settings, extension) {
       super._init(0.5, _("No Time For Caution"));
       this.settings = settings;
       this._extension = extension;
+      this._workingDaysCache = null;
 
       this.label = new St.Label({
         text: _("Calculating..."),
@@ -72,9 +115,31 @@ const Indicator = GObject.registerClass(
           case "weeks":
             timeString = `${(diff / 604800).toFixed(2)} Weeks ${customText}`;
             break;
-          case "days":
-            timeString = `${(diff / 86400).toFixed(2)} Days ${customText}`;
+          case "days": {
+            const excludeWeekends =
+              this.settings.get_boolean("exclude-weekends");
+
+            const excludedDates =
+              this.settings.get_string("exclude-dates");
+
+            if (excludeWeekends || excludedDates.trim() !== "") {
+              const localNow = GLib.DateTime.new_now_local();
+              const localGoal = GLib.DateTime.new_from_unix_local(goalUnix);
+
+              const days = this._countWorkingDays(
+                localNow,
+                localGoal,
+                excludeWeekends,
+                excludedDates
+              );
+
+              timeString = `${days.toFixed(2)} Days ${customText}`;
+            } else {
+              timeString = `${(diff / 86400).toFixed(2)} Days ${customText}`;
+            }
+
             break;
+          }
           case "hours":
             timeString = `${(diff / 3600).toFixed(2)} Hours ${customText}`;
             break;
@@ -88,6 +153,53 @@ const Indicator = GObject.registerClass(
         }
         this.label.set_text(timeString);
       }
+    }
+
+    _countWorkingDays(now, goal, excludeWeekends, excludedDates) {
+      const excluded = new Set(
+        excludedDates.split(",").map(date => date.trim())
+      );
+      const currentDay = GLib.DateTime.new_local(
+        now.get_year(),
+        now.get_month(),
+        now.get_day_of_month(),
+        0, 0, 0
+      );
+      const nextDay = currentDay.add_days(1);
+      const nextDayUnix = nextDay.to_unix();
+      const goalUnix = goal.to_unix();
+
+      let days = 0;
+
+      if (isWorkingDay(currentDay, excludeWeekends, excluded)) {
+        days +=
+          (Math.min(goalUnix, nextDayUnix) - now.to_unix()) /
+          (nextDayUnix - currentDay.to_unix());
+      }
+
+      const cache = this._workingDaysCache;
+      const cacheIsValid =
+        cache?.nextDayUnix === nextDayUnix &&
+        cache.goalUnix === goalUnix &&
+        cache.excludeWeekends === excludeWeekends &&
+        cache.excludedDates === excludedDates;
+
+      if (!cacheIsValid) {
+        this._workingDaysCache = {
+          nextDayUnix,
+          goalUnix,
+          excludeWeekends,
+          excludedDates,
+          futureDays: countWorkingDays(
+            nextDay,
+            goal,
+            excludeWeekends,
+            excludedDates
+          ),
+        };
+      }
+
+      return days + this._workingDaysCache.futureDays;
     }
 
     destroy() {

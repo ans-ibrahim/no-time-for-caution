@@ -9,6 +9,8 @@ A GNOME Shell extension that displays a customizable countdown timer in the top 
 - **Custom Text**: Personalize the display text (e.g., "till millionaire")
 - **Panel Integration**: Clean integration with GNOME Shell's top panel
 - **Real-time Updates**: Updates every second for accurate countdown
+- **Exclude Weekends**: Optionally exclude Saturdays and Sundays from the days countdown
+- **Exclude Custom Dates**: Exclude specific dates (e.g., holidays or days off) using a comma-separated list in YYYY-MM-DD format
 
 ## Installation
 
@@ -43,6 +45,8 @@ Install from [GNOME Shell extension page](https://extensions.gnome.org/extension
    - **Goal Time**: Enter your target date and time (DD/MM/YYYY hh:mm)
    - **Time Unit**: Choose how to display the countdown
    - **Custom Text**: Add your own text (e.g., "till billionaire")
+   - **Exclude Weekends**: When using the "Days" unit, optionally exclude Saturdays and Sundays
+   - **Excluded Dates**: Enter comma-separated dates in YYYY-MM-DD format to exclude holidays or other days off (e.g., `2026-12-07, 2026-12-08`)
 
 ### Example Configurations
 
@@ -79,6 +83,8 @@ The extension stores settings using GSettings with the following keys:
 - `custom-text`: Custom text to append after time value
 - `indicator-position`: Panel position (left, center, right)
 - `indicator-index`: Panel index for ordering
+- `exclude-weekends`: Whether to exclude Saturdays and Sundays from the days countdown (default: false)
+- `exclude-dates`: Comma-separated dates to exclude in YYYY-MM-DD format (default: empty)
 
 ## Troubleshooting
 
